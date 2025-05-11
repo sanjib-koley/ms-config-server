@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+    tools{
+        maven 'maven_3_9_6'
+    }
+    stages{
+        stage('Build Maven'){
+            steps{
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/sanjib-koley/ms-config-server']]])
+                sh 'mvn clean install'
+            }
+        }
+        stage('Build docker image'){
+            steps{
+                script{
+                    sh 'docker build -t sanjibkoleycts/ms-config-server .'
+                }
+            }
+        }
+       stage('Push image to Hub'){
+            steps{
+                script{
+                   withCredentials([usernamePassword(credentialsId: '302427d2-cc1a-49ce-b610-c50e1cdf1e1d', passwordVariable: 'dockerhubpwd', usernameVariable: 'dockerhubuser')]) {
+	                    sh 'docker login -u ${dockerhubuser} -p ${dockerhubpwd}'
+                   }
+                   sh 'docker push sanjibkoleycts/ms-config-server'
+                }
+            }
+        }
+       /* stage('Deploy to k8s'){
+            steps{
+                script{
+                    kubernetesDeploy (configs: 'deploymentservice.yaml',kubeconfigId: 'k8sconfigpwd')
+                }
+            }
+        }*/
+    }
+}
