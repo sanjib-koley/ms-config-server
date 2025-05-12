@@ -34,5 +34,22 @@ pipeline {
                 }
             }
         }*/
+		/*stage('Deploy to k8s'){
+            steps{
+                script{
+                   kubeconfig(credentialsId: 'minikube-creds', serverUrl: 'https://172.29.254.65:8443') {
+                     sh 'kubectl apply -f deploymentservice.yaml'  
+                       
+                   }
+                }
+            }
+        }*/
+		stage('Deploy to k8s'){
+            steps{
+                script{
+                   sh 'kubectl apply -f deploymentservice.yaml'
+                }
+            }
+        }
     }
 }
